@@ -15,7 +15,7 @@ target_channel_id1 = 652634813576118335
 
 @bot.event
 async def on_message(message):
-    if message.channel.id == target_channel_id1:
+    if message.channel.id == target_channel_id:
         async for message in message.channel.history(limit=1):
             print("Новое объявление!")
             ifContainsAndStore(message)
@@ -63,8 +63,8 @@ def ifContainsAndStore(string):
             storeData(string.content, 21, "Продаётся BMW X6 M", "T")
 
 def storeData(string, int, comment, letter):
-    if convertToMoney(string) != "Цена договорная!" and convertToMoney(string) != "Скорее всего это обмен!" and convertToMoney(string) != None:
-        converted = convertToMoney(string)
+    converted = convertToMoney(string)
+    if converted != "Цена договорная!" and converted != "Скорее всего это обмен!" and converted != None:
         if converted != 0:
             x = ws[f'A{int}'].value
             ws[f'{letter}{x}'].value = converted
@@ -72,7 +72,7 @@ def storeData(string, int, comment, letter):
             wb.save('Analusis.xlsx')
             print(comment, "за", converted)
         else:
-            print("Ошибка в получении цены!")
+            print("Ошибка в получении цены или цена договорная!")
     else:
         print("Цена договорная и она не записана в таблицу!")  
 
@@ -85,14 +85,14 @@ def convertToMoney(string):
     count = 0
     count1 = 0
     for lines in string.splitlines():
-        if string.find('догов') >= 0 or string.find('Догов') >= 0 or string.find('лс') >= 0:
+        if lines.find('догов') >= 0 or string.find('Догов') >= 0 or string.find('в лс') >= 0:
             return "Цена договорная!"
         if lines.find('бмен') >= 0 or string.find('Обмен') >= 0 or string.find('обмен') >= 0:
             count1 = count1 + 1
         if lines.find('на') >= 0 and count1 == 1:
             return "Скорее всего это обмен!"
-        if lines.find('гос') == -1 and lines.find('Гос') == -1:
-            for str in string.split():
+        if lines.find('гос') == -1 and lines.find('Гос') == -1 and lines.find('Гос. цена') == -1:
+            for str in lines.split():
                 if str.find("кк") >= 0 or str.find(",") >= 0 or str.find(".") >= 0 or str.find("к") >= 0 or startWithDigit(str) == 1 or str.find("kk") >= 0 or str.find("k") >= 0:
                     if startWithDigit(str) == 1:
                         if str.find('.') == 1 and str.find('.', 2) == 3 and str.find('.', 4) == 5:
@@ -100,8 +100,8 @@ def convertToMoney(string):
                         if str.find('кг') >= 0 or str.find('kg') >= 0:
                             None
                         if str.find('.') == 1 or str.find(',') == 1: # проверка формата 5.1кк
-                            #print('Выбран первый формат!')
                             if str.find('кк') >= 0 or str.find('kk') >= 0: 
+                                #print('Выбран первый формат!')
                                 for str1 in str:
                                     if block <= 2:
                                         block = block + 1
@@ -134,8 +134,8 @@ def convertToMoney(string):
                                         hundreds = int(str1)
                                         count = count + 1
                         if str.find('.') == 1 or str.find(',') == 1: # проверка формата  1.550k
-                            #print('Выбран четвёртый формат!')
                             if str.find('к') == 5 or str.find('k') == 5:
+                                #print('Выбран четвёртый формат!')
                                 count = 0
                                 for str1 in str:
                                     if count <= 3:
@@ -150,9 +150,8 @@ def convertToMoney(string):
                                         elif str1.isdigit() and count == 3:
                                             hundreds = int(str1)
                                             count = count + 1
-
         else:
-            return None
+            None
                             
                                                 
     millions = millions * 1000000
