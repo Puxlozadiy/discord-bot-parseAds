@@ -19,7 +19,6 @@ async def on_message(message):
         async for message in message.channel.history(limit=1):
             print("Новое объявление!")
             ifContainsAndStore(message)
-        
 
 def ifContainsAndStore(string):
     if string.content.find("родам") >= 0:
@@ -88,77 +87,95 @@ def convertToMoney(string):
         if lines.find('догов') >= 0 or string.find('Догов') >= 0 or string.find('в лс') >= 0:
             return "Цена договорная!"
         if lines.find('бмен') >= 0 or string.find('Обмен') >= 0 or string.find('обмен') >= 0:
-            count1 = count1 + 1
-        if lines.find('на') >= 0 and count1 == 1:
-            return "Скорее всего это обмен!"
+            if lines.find('на') > lines.find('бмен'):
+                return "Скорее всего это обмен!"
         if lines.find('гос') == -1 and lines.find('Гос') == -1 and lines.find('Гос. цена') == -1:
             for str in lines.split():
                 if str.find("кк") >= 0 or str.find(",") >= 0 or str.find(".") >= 0 or str.find("к") >= 0 or startWithDigit(str) == 1 or str.find("kk") >= 0 or str.find("k") >= 0:
-                    if startWithDigit(str) == 1:
-                        if str.find('.') == 1 and str.find('.', 2) == 3 and str.find('.', 4) == 5:
-                            None
-                        if str.find('кг') >= 0 or str.find('kg') >= 0:
-                            None
-                        if str.find('.') == 1 or str.find(',') == 1: # проверка формата 5.1кк
-                            if str.find('кк') >= 0 or str.find('kk') >= 0: 
-                                #print('Выбран первый формат!')
-                                for str1 in str:
-                                    if block <= 2:
-                                        block = block + 1
-                                        if str1.isdigit() == 1 and bool == 0:
-                                            millions = int(str1)
-                                        if str1 == "." or str1 == ",":
-                                            bool = 1
-                                        if str1.isdigit() == 1 and bool == 1:
-                                            thousands = int(str1)
-                        if str.find('.') == 3 or str.find('к') == 3 and str.find('.') != 1 or str.find('k') == 3 and str.find('.') != 1: # проверка формата 900к
-                            #print('Выбран второй формат!')
-                            count = 0
-                            for str1 in str:
-                                if count == 0:
-                                    thousands = int(str1)
-                                elif count == 1:
-                                    hundreds = int(str1)
-                                count = count + 1
-                        if str.find('.') == 1 and str.find('.', 2) == 5: # проверка формата  1.550.000
-                            #print('Выбран третий формат!')
-                            for str1 in str:
-                                if count <= 3:
-                                    if str1.isdigit() and count == 0:
-                                        millions = int(str1)
-                                        count = count + 1
-                                    elif str1.isdigit() and count == 1:
-                                        thousands = int(str1)
-                                        count = count + 1
-                                    elif str1.isdigit() and count == 2:
-                                        hundreds = int(str1)
-                                        count = count + 1
-                        if str.find('.') == 1 or str.find(',') == 1: # проверка формата  1.550k
-                            if str.find('к') == 5 or str.find('k') == 5:
-                                #print('Выбран четвёртый формат!')
+                    if str.find('кг') == -1 and str.find('kg') == -1:
+                        if startWithDigit(str) == 1:
+                            if str.find('.') == 1 and str.find('.', 2) == 3 and str.find('.', 4) == 5:
+                                continue
+                            if str.find('.') == 1 or str.find(',') == 1: # проверка формата 5.1кк
+                                if str.find('кк') >= 0 or str.find('kk') >= 0: 
+                                    #print('Выбран первый формат!')
+                                    for str1 in str:
+                                        if block <= 2:
+                                            block = block + 1
+                                            if str1.isdigit() == 1 and bool == 0:
+                                                millions = int(str1)
+                                            if str1 == "." or str1 == ",":
+                                                bool = 1
+                                            if str1.isdigit() == 1 and bool == 1:
+                                                thousands = int(str1)
+                                    millions = millions * 1000000
+                                    thousands = thousands * 100000
+                                    millions = millions + thousands
+                                    return millions
+                            if str.find('.') == 3 or str.find('к') == 3 and str.find('.') != 1 or str.find('k') == 3 and str.find('.') != 1: # проверка формата 900к
+                                print('Выбран второй формат!')
                                 count = 0
                                 for str1 in str:
-                                    if count <= 3:
+                                    if count == 0:
+                                        thousands = int(str1)
+                                    elif count == 1:
+                                        hundreds = int(str1)
+                                    count = count + 1
+                                thousands = thousands * 100000
+                                hundreds = hundreds * 10000
+                                millions = thousands + hundreds
+                                return millions
+                            if str.find('.') == 1 and str.find('.', 2) == 5: # проверка формата  1.550.000
+                                print('Выбран третий формат!')
+                                count = 0
+                                for str1 in str:
+                                    if count <= 2:
                                         if str1.isdigit() and count == 0:
                                             millions = int(str1)
                                             count = count + 1
-                                        elif str1.find('.') >= 0 and count == 1:
-                                            count = count + 1
-                                        elif str1.isdigit() and count == 2:
+                                        elif str1.isdigit() and count == 1:
                                             thousands = int(str1)
                                             count = count + 1
-                                        elif str1.isdigit() and count == 3:
+                                        elif str1.isdigit() and count == 2:
                                             hundreds = int(str1)
                                             count = count + 1
+                                millions = millions * 1000000
+                                thousands = thousands * 100000
+                                hundreds = hundreds * 10000
+                                millions = millions + thousands + hundreds
+                                return millions
+                            if str.find('.') == 1 or str.find(',') == 1: # проверка формата  1.550k
+                                if str.find('к') == 5 or str.find('k') == 5:
+                                    print('Выбран четвёртый формат!')
+                                    count = 0
+                                    for str1 in str:
+                                        if count <= 3:
+                                            if str1.isdigit() and count == 0:
+                                                millions = int(str1)
+                                                count = count + 1
+                                            elif str1.find('.') >= 0 and count == 1:
+                                                count = count + 1
+                                            elif str1.isdigit() and count == 2:
+                                                thousands = int(str1)
+                                                count = count + 1
+                                            elif str1.isdigit() and count == 3:
+                                                hundreds = int(str1)
+                                                count = count + 1
+                                    millions = millions * 1000000
+                                    thousands = thousands * 100000
+                                    hundreds = hundreds * 10000
+                                    millions = millions + thousands + hundreds
+                                    return millions
+                            if str.find('кк') == 1 or str.find('kk') == 1: # проверка формата  1кк
+                                count = 0
+                                for str1 in str:
+                                    if count == 0 and str1.isdigit() == 1:
+                                        millions = int(str1)
+                                        count = count + 1
+                                millions = millions * 1000000
+                                return millions
         else:
             None
-                            
-                                                
-    millions = millions * 1000000
-    thousands = thousands * 100000
-    hundreds = hundreds * 10000
-    millions = millions + thousands + hundreds
-    return millions
 
 
 def startWithDigit(str):
