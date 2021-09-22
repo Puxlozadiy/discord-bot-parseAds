@@ -9,7 +9,7 @@ import discord
 from discord.ext import commands, tasks
  
 bot = commands.Bot(command_prefix='!', self_bot=True)
-target_channel_id = 652634813576118335
+target_channel_id = 886915166120345670
 
 
 @bot.event
@@ -50,7 +50,7 @@ def ifContainsAndStore(string):
             storeData(string.content, 15, "Продаётся Ford Mustang 2019", "N")
         elif string.content.find("M5F90") >= 0 :
             storeData(string.content, 16, "Продаётся BMW M5F90", "O")
-        elif string.content.find("LX570") >= 0 or string.content.find("лексус") >= 0:
+        elif string.content.find("LX570") >= 0 or string.content.find("лексус") >= 0 or string.content.find("Лексус") >= 0:
             storeData(string.content, 17, "Продаётся Lexus LX570", "P")
         elif string.content.find("Model S") >= 0 :
             storeData(string.content, 18, "Продаётся Tesla Model S", "Q")
@@ -62,7 +62,7 @@ def ifContainsAndStore(string):
             storeData(string.content, 21, "Продаётся BMW X6 M", "T")
 
 def storeData(string, int, comment, letter):
-    if convertToMoney(string) != "Цена договорная!":
+    if convertToMoney(string) != "Цена договорная!" and convertToMoney(string) != "Скорее всего это обмен!":
         converted = convertToMoney(string)
         if converted != 0:
             x = ws[f'A{int}'].value
@@ -76,56 +76,64 @@ def storeData(string, int, comment, letter):
         print("Цена договорная и она не записана в таблицу!")  
 
 def convertToMoney(string):
-    if string.find('догов') >= 0 or string.find('Догов') >= 0 or string.find('лс') >= 0:
-        return "Цена договорная!"
     bool = 0
     millions = 0
     thousands = 0
     hundreds = 0
     block = 0
     count = 0
-    for str in string.split():
-        if str.find("кк") >= 0 or str.find(",") >= 0 or str.find(".") >= 0 or str.find("к") >= 0 or startWithDigit(str) == 1 or str.find("kk") >= 0 or str.find("k") >= 0:
-            if startWithDigit(str) == 1:
-                if str.find('.') == 1 and str.find('.', 2) == 3 and str.find('.', 4) == 5:
-                    return
-                if str.find('.') == 1 or str.find(',') == 1 and str.find('кк') >= 0 or str.find('kk') >= 0: # проверка формата
-                    for str1 in str:
-                        if block <= 2:
-                            block = block + 1
-                            if str1.isdigit() == 1 and bool == 0:
-                                millions = int(str1)
-                            if str1 == "." or str1 == ",":
-                                bool = 1
-                            if str1.isdigit() == 1 and bool == 1:
-                                thousands = int(str1)
-                if str.find('.') == 3 and str.find('.') != 1 or str.find('к') == 3 and str.find('.') != 1 or str.find('k') == 3 and str.find('.') != 1: # проверка формата
-                    count = 0
-                    for str1 in str:
-                        if count == 0:
-                            thousands = int(str1)
-                        elif count == 2:
-                            hundreds = int(str1)
-                        count = count + 1
-                elif str.find('.') == 1 and str.find('.', 2) == 5: # проверка формата
-                        for str1 in str:
-                            if count <= 3:
-                                if str1.isdigit() and count == 0:
-                                    millions = int(str1)
-                                    count = count + 1
-                                elif str1.isdigit() and count == 1:
+    count1 = 0
+    for lines in string.splitlines():
+        if string.find('догов') >= 0 or string.find('Догов') >= 0 or string.find('лс') >= 0:
+            return "Цена договорная!"
+        if string.find('бмен') >= 0 or string.find('Обмен') >= 0 or string.find('обмен') >= 0:
+            count1 = count1 + 1
+        if string.find('на') >= 0 and count1 == 1:
+            return "Скорее всего это обмен!"
+        if lines.find('гос') == -1 or lines.find('Гос') == -1:
+            for str in string.split():
+                if str.find("кк") >= 0 or str.find(",") >= 0 or str.find(".") >= 0 or str.find("к") >= 0 or startWithDigit(str) == 1 or str.find("kk") >= 0 or str.find("k") >= 0:
+                    if startWithDigit(str) == 1:
+                        if str.find('.') == 1 and str.find('.', 2) == 3 and str.find('.', 4) == 5:
+                            return "Цена договорная!"
+                        if str.find('.') == 1 or str.find(',') == 1 and str.find('кк') >= 0 or str.find('kk') >= 0: # проверка формата
+                            for str1 in str:
+                                if block <= 2:
+                                    block = block + 1
+                                    if str1.isdigit() == 1 and bool == 0:
+                                        millions = int(str1)
+                                    if str1 == "." or str1 == ",":
+                                        bool = 1
+                                    if str1.isdigit() == 1 and bool == 1:
+                                        thousands = int(str1)
+                        if str.find('.') == 3 and str.find('.') != 1 or str.find('к') == 3 and str.find('.') != 1 or str.find('k') == 3 and str.find('.') != 1: # проверка формата
+                            count = 0
+                            for str1 in str:
+                                if count == 0:
                                     thousands = int(str1)
-                                    count = count + 1
-                                elif str1.isdigit() and count == 2:
+                                elif count == 2:
                                     hundreds = int(str1)
-                                    count = count + 1
-                    
-                                         
+                                count = count + 1
+                        elif str.find('.') == 1 and str.find('.', 2) == 5: # проверка формата
+                                for str1 in str:
+                                    if count <= 3:
+                                        if str1.isdigit() and count == 0:
+                                            millions = int(str1)
+                                            count = count + 1
+                                        elif str1.isdigit() and count == 1:
+                                            thousands = int(str1)
+                                            count = count + 1
+                                        elif str1.isdigit() and count == 2:
+                                            hundreds = int(str1)
+                                            count = count + 1
+                            
+                                                
     millions = millions * 1000000
     thousands = thousands * 100000
     hundreds = hundreds * 10000
     millions = millions + thousands + hundreds
     return millions
+
 
 def startWithDigit(str):
     if str.startswith('1') or str.startswith('2') or str.startswith('3') or str.startswith('4') or str.startswith('5') or str.startswith('6') or str.startswith('7') or str.startswith('8') or str.startswith('9'):
