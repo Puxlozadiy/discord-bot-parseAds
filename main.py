@@ -15,7 +15,7 @@ target_channel_id1 = 652634813576118335
 
 @bot.event
 async def on_message(message):
-    if message.channel.id == target_channel_id1:
+    if message.channel.id == target_channel_id:
         async for message in message.channel.history(limit=1):
             print("Новое объявление!")
             ifContainsAndStore(message)
@@ -39,7 +39,7 @@ def ifContainsAndStore(string):
             storeData(string.content, 9, "Продаётся KIA Stinger", "H")
         elif string.content.find("R34") >= 0 or string.content.find("скайлик") >= 0 and string.content.find("34") >= 0:
             storeData(string.content, 10, "Продаётся Skyline R34", "I")
-        elif string.content.find("X5 E70") >= 0 or string.content.find("x5 e70") >= 0 or string.content.find("X5 e70") >= 0:
+        elif string.content.find("E70") >= 0 and string.content.find("X5") >= 0 or string.content.find("x5 e70") >= 0 or string.content.find("X5 e70") >= 0:
             storeData(string.content, 11, "Продаётся BMW x5 e70", "J")
         elif string.content.find("Alfa") >= 0 or string.content.find("альфу") >= 0:
             storeData(string.content, 12, "Продаётся Alfa Romeo", "K")
@@ -63,7 +63,7 @@ def ifContainsAndStore(string):
             storeData(string.content, 21, "Продаётся BMW X6 M", "T")
 
 def storeData(string, int, comment, letter):
-    if convertToMoney(string) != "Цена договорная!" and convertToMoney(string) != "Скорее всего это обмен!":
+    if convertToMoney(string) != "Цена договорная!" and convertToMoney(string) != "Скорее всего это обмен!" and convertToMoney(string) != None:
         converted = convertToMoney(string)
         if converted != 0:
             x = ws[f'A{int}'].value
@@ -87,16 +87,18 @@ def convertToMoney(string):
     for lines in string.splitlines():
         if string.find('догов') >= 0 or string.find('Догов') >= 0 or string.find('лс') >= 0:
             return "Цена договорная!"
-        if string.find('бмен') >= 0 or string.find('Обмен') >= 0 or string.find('обмен') >= 0:
+        if lines.find('бмен') >= 0 or string.find('Обмен') >= 0 or string.find('обмен') >= 0:
             count1 = count1 + 1
-        if string.find('на') >= 0 and count1 == 1:
+        if lines.find('на') >= 0 and count1 == 1:
             return "Скорее всего это обмен!"
-        if lines.find('гос') == -1 or lines.find('Гос') == -1:
+        if lines.find('гос') == -1 and lines.find('Гос') == -1:
             for str in string.split():
                 if str.find("кк") >= 0 or str.find(",") >= 0 or str.find(".") >= 0 or str.find("к") >= 0 or startWithDigit(str) == 1 or str.find("kk") >= 0 or str.find("k") >= 0:
                     if startWithDigit(str) == 1:
                         if str.find('.') == 1 and str.find('.', 2) == 3 and str.find('.', 4) == 5:
                             return "Цена договорная!"
+                        if str.find('кг') >= 0 or str.find('kg') >= 0:
+                            return None
                         if str.find('.') == 1 or str.find(',') == 1 and str.find('кк') >= 0 or str.find('kk') >= 0: # проверка формата
                             for str1 in str:
                                 if block <= 2:
@@ -107,15 +109,15 @@ def convertToMoney(string):
                                         bool = 1
                                     if str1.isdigit() == 1 and bool == 1:
                                         thousands = int(str1)
-                        if str.find('.') == 3 and str.find('.') != 1 or str.find('к') == 3 and str.find('.') != 1 or str.find('k') == 3 and str.find('.') != 1: # проверка формата
+                        if str.find('.') == 3 or str.find('к') == 3 and str.find('.') != 1 or str.find('k') == 3 and str.find('.') != 1: # проверка формата 
                             count = 0
                             for str1 in str:
                                 if count == 0:
                                     thousands = int(str1)
-                                elif count == 2:
+                                elif count == 1:
                                     hundreds = int(str1)
                                 count = count + 1
-                        elif str.find('.') == 1 and str.find('.', 2) == 5: # проверка формата
+                        elif str.find('.') == 1 and str.find('.', 2) == 5: # проверка формата  1.550.000
                                 for str1 in str:
                                     if count <= 3:
                                         if str1.isdigit() and count == 0:
@@ -127,6 +129,8 @@ def convertToMoney(string):
                                         elif str1.isdigit() and count == 2:
                                             hundreds = int(str1)
                                             count = count + 1
+        else:
+            return None
                             
                                                 
     millions = millions * 1000000
