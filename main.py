@@ -15,7 +15,7 @@ target_channel_id1 = 652634813576118335
 
 @bot.event
 async def on_message(message):
-    if message.channel.id == target_channel_id:
+    if message.channel.id == target_channel_id1:
         async for message in message.channel.history(limit=1):
             print("Новое объявление!")
             ifContainsAndStore(message)
@@ -23,7 +23,7 @@ async def on_message(message):
 
 def ifContainsAndStore(string):
     if string.content.find("родам") >= 0:
-        if string.content.find("evo 6") >= 0 or string.content.find("Evo 6") >= 0 or string.content.find("евик 6") >= 0:
+        if string.content.find("evo 6") >= 0 or string.content.find("Evo 6") >= 0 or string.content.find("евик 6") >= 0 or string.content.find("Evo6") >= 0:
             storeData(string.content, 3, "Продаётся evo 6", "B")
         elif string.content.find("350z") >= 0 :
             storeData(string.content, 4, "Продаётся 350z", "C")
