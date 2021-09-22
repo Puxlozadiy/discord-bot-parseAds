@@ -10,11 +10,12 @@ from discord.ext import commands, tasks
  
 bot = commands.Bot(command_prefix='!', self_bot=True)
 target_channel_id = 886915166120345670
+target_channel_id1 = 652634813576118335
 
 
 @bot.event
 async def on_message(message):
-    if message.channel.id == target_channel_id:
+    if message.channel.id == target_channel_id1:
         async for message in message.channel.history(limit=1):
             print("Новое объявление!")
             ifContainsAndStore(message)
