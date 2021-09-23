@@ -15,7 +15,7 @@ target_channel_id1 = 652634813576118335
 
 @bot.event
 async def on_message(message):
-    if message.channel.id == target_channel_id:
+    if message.channel.id == target_channel_id1:
         async for message in message.channel.history(limit=1):
             ifContainsAndStore(message)
 
